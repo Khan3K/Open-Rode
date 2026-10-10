@@ -6,79 +6,91 @@
 
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?style=for-the-badge&logo=php)](https://php.net)
 [![JavaScript](https://img.shields.io/badge/JS-Vanilla-F7DF1E?style=for-the-badge&logo=javascript)](https://developer.mozilla.org/docs/Web/JavaScript)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-143%2F143-brightgreen?style=for-the-badge)](docs/BUG_FIXES.md)
 [![Models](https://img.shields.io/badge/Models-87%2B-orange?style=for-the-badge)](docs/REQUIREMENTS.md)
 [![Skills](https://img.shields.io/badge/Skills-10%2B-blue?style=for-the-badge)](docs/INSTALL.md)
-[![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)](README.md)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.0.0-ff69b4?style=for-the-badge)](README.md)
 
-**One workspace. Every model. Full history.**
+### Quick Start — Get running in 2 minutes
 
-`Open-Rode` unifies file management, streaming AI chat, undo/redo versioning, a skills marketplace, and an 87-model catalogue — all in a zero-build PHP + vanilla JS stack.
+```bash
+# 1. Copy to web root
+cp -r Open-Rode /opt/lampp/htdocs/
 
-[![Watch the demo](#)](#gui-walkthrough) • [![Roadmap](#roadmap)](#roadmap) • [![Contribute](#contributing)](#contributing)
+# 2. Make data writable
+chmod -R 755 /opt/lampp/htdocs/Open-Rode/data
+
+# 3. Start Apache from XAMPP control panel
+
+# 4. Open http://localhost/Open-Rode/
+
+# 5. Done — chat, undo, skills, and 87 models ready
+```
+
+[![Watch demo](#)](#quick-start) • [![Roadmap](#roadmap)](#roadmap) • [![Contribute](#contributing)](#contributing)
 
 </div>
 
 ---
 
-## 📑 Table of Contents
+## 📋 Table of Contents
 
-| # | Section | Description |
-|---|---------|-------------|
-| 1 | [Overview](#overview) | What Open-Rode is and why it exists |
-| 2 | [Architecture](#architecture) | System diagram & data flow |
-| 3 | [Feature Matrix](#feature-matrix) | Every capability, side by side |
-| 4 | [GUI Walkthrough](#gui-walkthrough) | Visual tour with interface mockups |
-| 5 | [Metrics Dashboard](#metrics-dashboard) | Live health & usage graphs |
-| 6 | [Installation](#installation) | Apache / built-in / Docker |
-| 7 | [Configuration](#configuration) | Keys, providers, environment |
-| 8 | [Usage Guide](#usage-guide) | Chat, auto-mode, skills, models |
-| 9 | [API Reference](#api-reference) | Every endpoint, parameter, response |
-| 10 | [Testing](#testing) | Run the full regression suite |
-| 11 | [Roadmap](#roadmap) | Planned features |
-| 12 | [Contributing](#contributing) | How to help |
-| 13 | [License](#license) | MIT |
+| # | Section | |
+|---|---------|---|
+| 1 | [Quick Start](#quick-start) | Get running in 2 minutes |
+| 2 | [Overview](#overview) | What & why |
+| 3 | [Architecture](#architecture) | System diagram |
+| 4 | [Feature Matrix](#feature-matrix) | Desktop vs phone |
+| 5 | [GUI Walkthrough](#gui-walkthrough) | Visual tour |
+| 6 | [Metrics Dashboard](#metrics-dashboard) | Health & usage graphs |
+| 7 | [Installation](#installation) | Apache / built-in / Docker |
+| 8 | [Configuration](#configuration) | Keys & providers |
+| 9 | [Usage Guide](#usage-guide) | Chat, auto, skills |
+| 10 | [API Reference](#api-reference) | All endpoints |
+| 11 | [Testing](#testing) | 143/143 suite |
+| 12 | [Roadmap](#roadmap) | Planned features |
+| 13 | [Contributing](#contributing) | How to help |
+| 14 | [Troubleshooting](#troubleshooting) | Common fixes |
+| 15 | [License](#license) | MIT |
 
 ---
 
 ## 🌐 Overview
 
-Open-Rode is a **local-first AI coding workspace**. It lets you:
+Open-Rode is a **local-first AI coding workspace**. One interface for:
 
-- 📂 **Browse & edit** a project tree with full version history
-- 💬 **Chat** with any of **87+ AI models** (10 pre-configured + 77 from the catalogue)
-- ⚡ **Stream** responses over Server-Sent Events with live code rendering
-- ↩️ **Undo / redo** every AI-applied change with comments
-- 🧩 **Attach skills** (Landing page, SEO, Dark mode…) above the composer
-- 📊 **Monitor** context-window usage in real time
-- 📱 **Use it on a phone** — every control is a ≥44px tap target
+- 📂 **File tree** with rename, delete, create
+- 💬 **Streaming AI chat** — 87+ models (10 built-in + catalogue)
+- ⚡ **Auto mode** — multi-file generation with truncation warnings
+- ↩️ **Undo / redo** — version history with comments
+- 🧩 **Skills** — chips above composer, auto-inject
+- 📊 **Context meter** — amber @70%, red @90%
+- 📱 **Phone-first UI** — ≥44px tap targets everywhere
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                     OPEN-RODE WORKSPACE                       │
-├────────────┬─────────────────────────────────────┬───────────┤
-│  📁 FILE    │                                     │  🧠 CHAT  │
-│   TREE      │         PREVIEW / CODE EDITOR        │  COMPOSER │
-│             │                                     │           │
-│  ├─ index   │   ┌─────────────────────────┐       │  [skills] │
-│  ├─ style   │   │   live preview pane      │       │  [model ▼]│
-│  └─ assets  │   │   (sandbox server)       │       │  [input ] │
-│             │   └─────────────────────────┘       │  [send →] │
-│  [undo][redo]                                     │           │
-│  [history ⌚]                                      │  ctx 29k  │
-└────────────┴─────────────────────────────────────┴───────────┘
+ ┌─────────────────────────────────────────────────────────────┐
+ │                    OPEN-RODE WORKSPACE                       │
+ ├────────┬─────────────────────────────────────┬─────────────┤
+ │ 📁 TREE│               PREVIEW / EDITOR      │ 💬 CHAT      │
+ │        │                                       │              │
+ │ ▾ src  │   ┌─────────────────────────┐       │ [skills]     │
+ │   ├ index│   │   live preview pane       │       │ [model ▼]    │
+ │   └ style│   │   (sandbox server)        │       │ [input ]     │
+ │ ▾ assets│   └─────────────────────────┘       │ [send →]     │
+ │        │                                       │              │
+ │ [undo][redo]                                    │ ctx 12.4k/128k│
+ └────────┴─────────────────────────────────────┴─────────────┘
 ```
 
 ### Why Open-Rode?
 
-| Problem | Open-Rode's Answer |
-|---------|--------------------|
-| Model lock-in | 87 models, switch in one click |
-| Lost work | Every change is versioned, restorable |
+| Problem | Answer |
+|---------|--------|
+| Model lock‑in | 87 models, one‑click switch |
+| Lost work | Every change versioned, restorable |
 | Opaque AI | Context meter + truncation warnings |
-| No phone UX | Thumb-friendly controls everywhere |
+| No phone UX | Thumb‑friendly, ≥44px everywhere |
 | Build tooling | Zero build — pure PHP + vanilla JS |
 
 ---
@@ -86,21 +98,21 @@ Open-Rode is a **local-first AI coding workspace**. It lets you:
 ## 🏗️ Architecture
 
 ```
-                              ┌─────────────────┐
-                              │   Web Browser    │
-                              │  (app.js + css)  │
-                              └────────┬────────┘
-                                       │  HTTP / SSE
-                              ┌────────▼────────┐
-                              │    router.php    │
-                              │    (Front Ctrl)  │
-                              └────────┬────────┘
-                                       │
-        ┌──────────────────────────────┼──────────────────────────────┐
-        │                              │                              │
+                               ┌─────────────────┐
+                               │   Web Browser    │
+                               │  (app.js + css)  │
+                               └────────┬────────┘
+                                        │  HTTP / SSE
+                               ┌────────▼────────┐
+                               │    router.php    │
+                               │    (Front Ctrl)  │
+                               └────────┬────────┘
+                                        │
+   ┌──────────────────────────────┼──────────────────────────────┐
+   │                              │                              │
 ┌───────▼───────┐           ┌──────────▼──────────┐         ┌───────▼───────┐
-│  lib/store.php │           │   lib/ai.php        │         │ lib/versions  │
-│  (project CRUD)│           │  (SSE streaming)    │         │  (undo/redo)  │
+│ lib/store.php │           │   lib/ai.php        │         │ lib/versions  │
+│ (project CRUD)│           │  (SSE streaming)    │         │  (undo/redo)  │
 └───────┬───────┘           └──────────┬──────────┘         └───────┬───────┘
         │                              │                              │
         │              ┌───────────────┼───────────────┐              │
@@ -112,10 +124,10 @@ Open-Rode is a **local-first AI coding workspace**. It lets you:
                        │                                 │
                        └─────────────┬───────────────────┘
                                      │
-                              ┌──────▼──────┐
-                              │  data/ dir   │
-                              │  (JSON store)│
-                              └─────────────┘
+                                ┌──────▼──────┐
+                                │  data/ dir   │
+                                │  (JSON store)│
+                                └─────────────┘
 ```
 
 ### Request Lifecycle
@@ -124,42 +136,42 @@ Open-Rode is a **local-first AI coding workspace**. It lets you:
 Client ──POST /api/chat──▶ router.php
                               │
                               ▼
-                    ┌───────────────────┐
-                    │ load project state│
-                    └─────────┬─────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-        ┌──────────┐   ┌──────────┐   ┌──────────┐
-        │ resolve  │   │ inject   │   │ build    │
-        │ mentions │   │ skills   │   │ messages │
-        └────┬─────┘   └────┬─────┘   └────┬─────┘
-             └───────────────┼───────────────┘
-                             ▼
-                    ┌───────────────────┐
-                    │ ai_chat_stream()  │◀── provider key
-                    └─────────┬─────────┘
-                              │ SSE
-                              ▼
-                    ┌───────────────────┐
-                    │ extract_files()   │──▶ apply to disk
-                    └─────────┬─────────┘
-                              ▼
-                    ┌───────────────────┐
-                    │ version_save()    │──▶ history
-                    └───────────────────┘
+                     ┌───────────────────┐
+                     │ load project state│
+                     └─────────┬─────────┘
+                               │
+          ┌───────────────┼───────────────┐
+          ▼               ▼               ▼
+   ┌──────────┐   ┌──────────┐   ┌──────────┐
+   │ resolve  │   │ inject   │   │ build    │
+   │ mentions │   │ skills   │   │ messages │
+   └────┬─────┘   └────┬─────┘   └────┬─────┘
+        └───────────────┼───────────────┘
+                        ▼
+               ┌───────────────────┐
+               │ ai_chat_stream()  │◀── provider key
+               └─────────┬─────────┘
+                         │ SSE
+                         ▼
+                ┌───────────────────┐
+                │ extract_files()   │──▶ apply to disk
+                └─────────┬─────────┘
+                          ▼
+                 ┌───────────────────┐
+                 │ version_save()    │──▶ history
+                 └───────────────────┘
 ```
 
 ### Technology Stack
 
 | Layer | Technology | Why |
 |-------|------------|-----|
-| Runtime | PHP 8.1+ | Zero-build, ubiquitous hosting |
+| Runtime | PHP 8.1+ | Zero‑build, ubiquitous hosting |
 | Frontend | Vanilla JS (2,016 LOC) | No framework overhead |
 | Styling | CSS (644 LOC) | Custom properties, responsive |
-| AI Transport | Server-Sent Events | Native streaming, auto-reconnect |
+| AI Transport | Server‑Sened Events | Native streaming, auto‑reconnect |
 | Storage | JSON files | No DB required, portable |
-| Preview | In-process sandbox | No port conflicts |
+| Preview | In‑process sandbox | No port conflicts |
 
 ---
 
@@ -169,17 +181,17 @@ Client ──POST /api/chat──▶ router.php
 |---------|:-------:|:-----:|-------|
 | File tree (nested) | ✅ | ✅ | Rename, delete, create |
 | Undo / redo | ✅ | ✅ | With comments |
-| History dialog | ✅ | ✅ | Exact-version restore |
+| History dialog | ✅ | ✅ | Exact‑version restore |
 | AI chat (SSE) | ✅ | ✅ | Streaming code render |
 | Model switching | ✅ | ✅ | 87 models in dropdown |
-| Auto mode | ✅ | ✅ | Multi-file generation |
-| Skills chips | ✅ | ✅ | 10 built-in + custom |
+| Auto mode | ✅ | ✅ | Multi‑file generation |
+| Skills chips | ✅ | ✅ | 10 built‑in + custom |
 | Context meter | ✅ | ✅ | Amber @70%, red @90% |
 | Live preview | ✅ | ✅ | Sandbox server |
-| Element picker | ✅ | ⚠️ | Tap-to-select |
-| Copy code block | ✅ | ✅ | One-click |
+| Element picker | ✅ | ⚠️ | Tap‑to‑select |
+| Copy code block | ✅ | ✅ | One‑click |
 | Fold code block | ✅ | ✅ | Show/hide toggle |
-| Gated model setup | ✅ | ✅ | One-click key add |
+| Gated model setup | ✅ | ✅ | One‑click key add |
 
 **Legend:** ✅ full support · ⚠️ partial · ❌ not available
 
@@ -190,9 +202,9 @@ Client ──POST /api/chat──▶ router.php
 ### 1. Home — Project Launcher
 
 ```
-╔═══════════════════════════════════════════════════════════╗
+╔════════════════════════════════════════════════════════════╗
 ║  🐎 Open-Rode                                    [+ New]  ║
-╠═══════════════════════════════════════════════════════════╣
+╠════════════════════════════════════════════════════════════╣
 ║                                                           ║
 ║   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐    ║
 ║   │ 📁 portfolio│   │ 📁 blog     │   │ 📁 api      │    ║
@@ -201,10 +213,10 @@ Client ──POST /api/chat──▶ router.php
 ║   │  edited 2h  │   │  edited 1d  │   │  edited 3d  │    ║
 ║   └─────────────┘   └─────────────┘   └─────────────┘    ║
 ║                                                           ║
-╚═══════════════════════════════════════════════════════════╝
+╚════════════════════════════════════════════════════════════╝
 ```
 
-### 2. Workspace — Three-Pane Layout
+### 2. Workspace — Three‑Pane Layout
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -229,13 +241,13 @@ Client ──POST /api/chat──▶ router.php
 ### 3. Skills Chips (above composer)
 
 ```
-  ┌──────────────────────────────────────────────────────────┐
-  │ 🏷️ [SEO] [Dark Mode] [Performance]  [+ Add skill]       │
-  └──────────────────────────────────────────────────────────┘
+  ┌────────────────────────────────────────────────────────┐
+  │ 🏷️ [SEO] [Dark Mode] [Performance]  [+ Add skill]    │
+  └────────────────────────────────────────────────────────┘
    │         │            │
-   │         │            └── built-in (free)
-   │         └── built-in (free)
-   └── built-in (free)
+   │         │            └── built‑in (free)
+   │         └── built‑in (free)
+   └── built‑in (free)
    
    🔒 [MiMo]  ← gated: click to add Zen key
 ```
@@ -243,20 +255,15 @@ Client ──POST /api/chat──▶ router.php
 ### 4. Context Meter
 
 ```
-  ctx  29.6k / 128k   [████████████░░░░░░░░░░]  23%
-                        ▲ green (< 70%)
-                        
-  ctx  95.0k / 128k   [███████████████████░░░░░]  74%  ⚠️
-                        ▲ amber (≥ 70%)
-                        
-  ctx 120.0k / 128k   [████████████████████████░]  94%  🔴
-                        ▲ red (≥ 90%)
+  ctx  29.6k / 128k   [████████████░░░░░░░░░░]  23%   ▲ green (< 70%)
+  ctx  95.0k / 128k   [███████████████████░░░░░]  74%   ⚠️ amber (≥ 70%)
+  ctx 120.0k / 128k   [████████████████████████░]  94%   🔴 red (≥ 90%)
 ```
 
 ### 5. History Dialog (exact restore)
 
 ```
-  ┌──────────────────────── History: index.php ───────────────────┐
+  ┌──────────────────────── History: index.php ─────────────────┐
   │ #   │ When          │ Comment              │    Action         │
   ├─────┼───────────────┼──────────────────────┼─────────────────┤
   │  4  │ 10:42 AM      │ "refactor hero"      │ [Restore]       │
@@ -264,8 +271,8 @@ Client ──POST /api/chat──▶ router.php
   │  2  │ 10:15 AM      │ current ●            │ [live]          │
   │  1  │ 09:52 AM      │ "initial AI write"   │ [Restore]       │
   └─────┴───────────────┴──────────────────────┴─────────────────┘
-     ● = currently active version
-     Restore → exact version (no drift after undo/redo)
+   ● = currently active version
+   Restore → exact version (no drift after undo/redo)
 ```
 
 ### 6. Code Block (collapsed by default)
@@ -314,7 +321,7 @@ Client ──POST /api/chat──▶ router.php
        ▲ rises as you chat, resets on new session
 ```
 
-### Badge Badges (traffic)
+### Traffic Badges
 
 | Metric | Badge | Value |
 |--------|-------|-------|
@@ -333,9 +340,9 @@ Client ──POST /api/chat──▶ router.php
 
 ```
   assets/app.js    ████████████████████████████████████████████████  2,016
-  lib/ai.php       ██████████████████████████████████████            596
-  index.php        █████████████████████████████████████            549
-  assets/app.css   ████████████████████████████████████████████████████  644
+  lib/ai.php       ███████████████████████████████████████            596
+  index.php        ██████████████████████████████████████            549
+  assets/app.css   ██████████████████████████████████████████████████  644
   lib/providers.php███████████████████████████████                   415
   ─────────────────────────────────────────────────────────────────
   TOTAL                                                             6,440 LOC
@@ -373,7 +380,7 @@ chmod -R 755 /opt/lampp/htdocs/Open-Rode/data
 xdg-open http://localhost/Open-Rode/
 ```
 
-### Option B — PHP Built-in Server
+### Option B — PHP Built‑in Server
 
 ```bash
 cd Open-Rode
@@ -395,16 +402,9 @@ docker run -d \
 ### Verify Install
 
 ```bash
-# PHP syntax
-/opt/lampp/bin/php -l index.php
-# → No syntax errors detected
-
-# JS syntax
-node --check assets/app.js
-
-# Full test suite (see Testing)
-cd /tmp/opencode && node wstest.js
-# → 143/143 checks passed
+/opt/lampp/bin/php -l index.php        # → No syntax errors detected
+node --check assets/app.js             # → JS syntax OK
+cd /tmp/opencode && node wstest.js     # → 143/143 checks passed
 ```
 
 ---
@@ -413,12 +413,11 @@ cd /tmp/opencode && node wstest.js
 
 ### Add a Provider / API Key
 
-1. Open **⚙️ Settings**
-2. Go to **Models** tab
-3. Click **Add Server**
-4. Choose a provider preset (OpenCode Zen, OpenAI, Anthropic, etc.)
-5. Paste your API key
-6. Save — models appear in the header dropdown **instantly**
+1. Open **⚙️ Settings** → **Models** tab
+2. Click **Add Server**
+3. Choose a provider preset (OpenCode Zen, OpenAI, Anthropic, etc.)
+4. Paste your API key
+5. Save — models appear in the header dropdown **instantly**
 
 ```
   ┌─ Add Server ──────────────────────────────┐
@@ -431,12 +430,12 @@ cd /tmp/opencode && node wstest.js
 
 ### Keyless (Free) Models
 
-The catalogue marks models with a `free` flag. Only verified-free models auto-activate without a key:
+The catalogue marks models with a `free` flag. Only verified‑free models auto‑activate without a key:
 
 ```
   ✅ space-bunny-free     → works keyless
-  🔒 mimo-v2.5-pro        → needs Zen key (one-click add)
-  ⛔ exo-free             → dead (auto-pruned)
+  🔒 mimo-v2.5-pro        → needs Zen key (one‑click add)
+  ⛔ exo-free             → dead (auto‑pruned)
 ```
 
 ### Environment Variables
@@ -455,7 +454,7 @@ The catalogue marks models with a `free` flag. Only verified-free models auto-ac
 ### Chat with AI
 
 1. Pick a model from the **header dropdown**
-2. Type a request: *"Make the hero background dark blue"*
+2. Type a request: `"Make the hero background dark blue"`
 3. Press **Enter** or **Send**
 4. Watch the **streaming code block** render live
 5. Review → **Apply** or **Reject**
@@ -470,7 +469,7 @@ The catalogue marks models with a `free` flag. Only verified-free models auto-ac
         [Apply] [Reject]
 ```
 
-### Auto Mode (multi-file)
+### Auto Mode (multi‑file)
 
 Toggle **Auto** in the composer to let the AI write several files at once.
 
@@ -483,11 +482,11 @@ Toggle **Auto** in the composer to let the AI write several files at once.
         ⚠ extra.txt  — ran out of room, ask it to continue
 ```
 
-When truncated, Open-Rode shows a **"ran out of room — ask it to continue"** toast instead of silently failing.
+When truncated, Open-Rode shows **"ran out of room — ask it to continue"** instead of silently failing.
 
 ### Undo / Redo
 
-Every AI-applied change is versioned:
+Every AI‑applied change is versioned:
 
 - Click **↶** / **↷** on a file row to step through history
 - Click **⌚** to open the **History dialog** and restore any exact version
@@ -498,10 +497,10 @@ Every AI-applied change is versioned:
 **Skills** are reusable instruction packs injected into your chat:
 
 1. Open **⚙️ Settings → Skills**
-2. Toggle built-in skills (SEO, Dark mode, Performance…)
+2. Toggle built‑in skills (SEO, Dark mode, Performance…)
 3. Or **add a custom skill**: name + instructions
 4. Active skills appear as **chips** above the composer
-5. They auto-inject into every message and clear after send
+5. They auto‑inject into every message and clear after send
 
 ```
   Active skills:  [🏷️ SEO] [🏷️ Dark Mode] [🏷️ Performance]
@@ -589,7 +588,7 @@ Every AI-applied change is versioned:
 
 ## 🧪 Testing
 
-The project ships a **143-check regression suite**:
+### Full regression suite
 
 ```bash
 # Workspace UI checks (143)
@@ -627,20 +626,20 @@ node --check assets/app.js
 | Version | Feature | Status |
 |---------|---------|--------|
 | 1.0 | Core editing, chat, undo/redo | ✅ shipped |
-| 1.0 | Skills system (10 built-in + custom) | ✅ shipped |
-| 1.0 | 87-model catalogue | ✅ shipped |
+| 1.0 | Skills system (10 built‑in + custom) | ✅ shipped |
+| 1.0 | 87‑model catalogue | ✅ shipped |
 | 1.0 | Context meter | ✅ shipped |
 | 1.1 | Real tokenizer for context estimate | 🔜 planned |
 | 1.1 | Collaborative cursors | 🔜 planned |
 | 1.2 | Plugin API | 🔜 planned |
 | 1.2 | Voice input | 🔜 planned |
-| 2.0 | Multi-user auth | 🔜 planned |
+| 2.0 | Multi‑user auth | 🔜 planned |
 
 ---
 
 ## 🤝 Contributing
 
-Contributions welcome! The project follows a **test-driven** workflow:
+Contributions welcome! Test‑driven workflow:
 
 ```bash
 # 1. Make your change
@@ -689,9 +688,32 @@ Open-Rode/
 
 ---
 
+## 🛠️ Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| **"AI returned an empty response"** | Check model selection; switch to a different model or add an API key |
+| **"Rate limited — retry in Xs"** | Wait for the countdown; the backend captured `Retry-After` header. No action needed — the countdown handles it. |
+| **Preview won't open** | Ensure `data/` is writable (chmod 755). Close any existing preview server first. |
+| **History button missing** | Only appears on files with version history (undoable/redoable). |
+| **Model dropdown empty** | Run `cd /tmp/opencode && node wstest.js` to refresh catalogue, or add a provider in Settings. |
+| **Chat input not accepting text** | Focus the input field; on mobile, tap the input area. |
+| **Skills chips not working** | Save the skill first in Settings → Skills; built‑in skills toggle on startup. |
+| **Context meter stuck at 0%** | New session — meter rises as you chat. Resets on new project. |
+| **Auto mode creates no files** | Model may have hit token limit — check the truncation toast and "ask it to continue". |
+
+### Getting help
+
+- 📖 Read [docs/REQUIREMENTS.md] for environment checks
+- 🐛 File an issue at the GitHub repo
+- 💡 Ask a question on the discussions board
+- 🛠️ Run the test suite: `cd /tmp/opencode && node wstest.js`
+
+---
+
 ## 📄 License
 
-MIT © Open-Rode contributors
+MIT © Open‑Rode contributors
 
 ```
   Permission is hereby granted, free of charge, to any person obtaining a copy
