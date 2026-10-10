@@ -1,0 +1,30 @@
+{
+    "providers": [
+        {
+            "id": "opencode-zen-free",
+            "name": "OpenCode Zen - Free (no key)",
+            "kind": "openai",
+            "base_url": "https://opencode.ai/zen/v1",
+            "api_key": "",
+            "models": [
+                "space-bunny-free",
+                "mimo-v2.6-flash-free",
+                "muse-spark-1.3-contributor-free",
+                "longcat-2.5-preview-free",
+                "ling-3.1-flash-free",
+                "nemotron-3-ultra-free",
+                "nemotron-3.5-lightning-free",
+                "step-5-preview-free",
+                "jev-1.13-free",
+                "muse-spark-1.2-contributor-free"
+            ],
+            "keyless": true,
+            "stream": true,
+            "key_url": ""
+        }
+    ],
+    "active": {
+        "provider": "opencode-zen-free",
+        "model": "space-bunny-free"
+    }
+}
