@@ -610,6 +610,16 @@ dialog::backdrop{background:rgba(3,5,9,.72);backdrop-filter:blur(3px)}
   .ws-desc{display:none}
 }
 
+/* ================= rate limit countdown ================= */
+.rate-limit-banner{font-size:13px;color:var(--text);animation:rl-pulse 2s ease-in-out infinite}
+.rate-limit-banner.ready{animation:none;color:var(--accent2)}
+.rl-progress{height:4px;background:var(--border2);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.rl-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--warn),var(--danger));border-radius:99px;transition:width .3s ease}
+.rl-text{display:flex;align-items:center;gap:8px;color:var(--dim)}
+.rl-text .rl-msg{color:var(--text)}
+.rl-text .rl-icon{font-size:14px}
+@keyframes rl-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
 /* ================= light theme ================= */
 [data-theme=light]{
   --bg:#f3f5fa; --bg2:#ffffff; --panel:#ffffff; --panel2:#f1f4f9; --panel3:#e7ecf4;

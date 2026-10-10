@@ -397,6 +397,15 @@ if (preg_match('#^/api/projects/([a-z0-9\-]+)/chat$#', $uri, $m) && $method === 
             $full = ai_chat_stream($messages, $provider, $project, $fileList, function (string $delta) use ($emit) {
                 $emit('delta', ['text' => $delta]);
             });
+        } catch (RateLimitException $e) {
+            $emit('error', [
+                'error' => $e->getMessage(),
+                'rate_limited' => true,
+                'retry_after' => $e->retryAfter,
+                'reset_at' => $e->resetAt
+            ]);
+            echo "event: done\n" . json_encode(['ok' => false]) . "\n\n";
+            exit;
         } catch (Throwable $e) {
             $emit('error', ['error' => $e->getMessage()]);
             echo "event: done\n" . json_encode(['ok' => false]) . "\n\n";

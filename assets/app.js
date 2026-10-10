@@ -1291,6 +1291,56 @@
     return buffer;
   }
 
+  function showRateLimitCountdown(el, body, retryAfter, resetAt) {
+    const endTime = resetAt * 1000; // convert to ms
+    const startTime = Date.now();
+    const totalMs = endTime - startTime;
+
+    el.classList.add('rate-limited');
+    body.innerHTML = '<div class="rate-limit-banner"></div>';
+    const banner = $('.rate-limit-banner', body);
+
+    function formatMs(ms) {
+      if (ms <= 0) return '0s';
+      const s = Math.ceil(ms / 1000);
+      if (s < 60) return s + 's';
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      return rem ? m + 'm ' + rem + 's' : m + 'm';
+    }
+
+    function render() {
+      const now = Date.now();
+      const remaining = endTime - now;
+      if (remaining <= 0) {
+        banner.innerHTML = '<span class="ready">✓ Ready to try again</span>';
+        banner.classList.add('ready');
+        el.classList.remove('rate-limited');
+        status('ready');
+        return;
+      }
+      const pct = Math.max(0, Math.min(100, (remaining / totalMs) * 100));
+      banner.innerHTML = '<div class="rl-progress"><i style="width:' + pct + '%"></i></div>' +
+        '<div class="rl-text">' +
+          '<span class="rl-icon">⏳</span>' +
+          '<span class="rl-msg">Rate limited — retry in <strong>' + formatMs(remaining) + '</strong></span>' +
+        '</div>';
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    render();
+    const timer = setInterval(() => {
+      if (Date.now() >= endTime) {
+        clearInterval(timer);
+        render();
+      } else {
+        render();
+      }
+    }, 1000);
+
+    el.dataset.rlTimer = timer;
+  }
+
   async function sendMessage(text) {
     if (!text || busy) return;
     busy = true;
@@ -1350,7 +1400,13 @@
           if (now - lastRender > 70) { body.innerHTML = md(acc) + '<span class="caret"></span>'; lastRender = now; msgs.scrollTop = msgs.scrollHeight; }
           status('writing…');
         }
-        else if (event === 'error') throw new Error(data.error);
+        else if (event === 'error') {
+          if (data.rate_limited && data.retry_after) {
+            showRateLimitCountdown(el, body, data.retry_after, data.reset_at);
+            return;
+          }
+          throw new Error(data.error);
+        }
         else if (event === 'files') {
           const changes = data.changes || [];
           if (data.truncated) truncated = true;

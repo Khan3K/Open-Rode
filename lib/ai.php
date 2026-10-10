@@ -1,6 +1,19 @@
 <?php
 declare(strict_types=1);
 
+class RateLimitException extends RuntimeException
+{
+    public int $retryAfter;
+    public int $resetAt;
+
+    public function __construct(string $message, int $retryAfter, int $resetAt)
+    {
+        parent::__construct($message);
+        $this->retryAfter = $retryAfter;
+        $this->resetAt = $resetAt;
+    }
+}
+
 function system_prompt(array $project, array $fileList): string
 {
     $files = $fileList ? implode(', ', array_slice($fileList, 0, 80)) : '(empty project)';
@@ -471,6 +484,7 @@ function ai_feed_sse_line(string $line, callable $consume, string &$raw): void
 function ai_sse_request(string $url, array $headers, string $body, callable $consume): int
 {
     $GLOBALS['__ai_raw'] = '';
+    $GLOBALS['__ai_retry_after'] = 0;
     if (!function_exists('curl_init')) return ai_sse_request_stream($url, $headers, $body, $consume);
 
     $buf = '';
@@ -492,6 +506,21 @@ function ai_sse_request(string $url, array $headers, string $body, callable $con
             }
             return strlen($chunk);
         },
+        CURLOPT_HEADERFUNCTION => function ($ch, $header) use (&$retryAfter) {
+            $len = strlen($header);
+            if (stripos($header, 'Retry-After:') === 0) {
+                $val = trim(substr($header, 12));
+                if (ctype_digit($val)) {
+                    $GLOBALS['__ai_retry_after'] = (int)$val;
+                }
+            } elseif (stripos($header, 'x-ratelimit-reset:') === 0) {
+                $val = trim(substr($header, 18));
+                if (ctype_digit($val)) {
+                    $GLOBALS['__ai_retry_after'] = max((int)$val - time(), 0);
+                }
+            }
+            return $len;
+        },
     ]);
 
     $ok = curl_exec($ch);
@@ -500,7 +529,6 @@ function ai_sse_request(string $url, array $headers, string $body, callable $con
     $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
     curl_close($ch);
 
-    // a JSON error body often arrives without a trailing newline
     if (trim($buf) !== '') ai_feed_sse_line(rtrim($buf, "\r"), $consume, $raw);
     $GLOBALS['__ai_raw'] = $raw;
 
@@ -511,6 +539,7 @@ function ai_sse_request(string $url, array $headers, string $body, callable $con
 /** Fallback for hosts with curl disabled - parses SSE line by line. */
 function ai_sse_request_stream(string $url, array $headers, string $body, callable $consume): int
 {
+    $GLOBALS['__ai_retry_after'] = 0;
     $hdrs = implode("\r\n", $headers) . "\r\nContent-Length: " . strlen($body) . "\r\nConnection: close";
     $ctx = stream_context_create(['http' => [
         'method' => 'POST',
@@ -525,6 +554,13 @@ function ai_sse_request_stream(string $url, array $headers, string $body, callab
     $status = 0;
     foreach ($http_response_header ?? [] as $h) {
         if (preg_match('#^HTTP/\S+\s+(\d+)#', $h, $m)) $status = (int)$m[1];
+        if (stripos($h, 'Retry-After:') === 0) {
+            $val = trim(substr($h, 12));
+            if (ctype_digit($val)) $GLOBALS['__ai_retry_after'] = (int)$val;
+        } elseif (stripos($h, 'x-ratelimit-reset:') === 0) {
+            $val = trim(substr($h, 18));
+            if (ctype_digit($val)) $GLOBALS['__ai_retry_after'] = max((int)$val - time(), 0);
+        }
     }
     if ($status >= 400) {
         $raw = (string)stream_get_contents($fp);
@@ -566,6 +602,16 @@ function ai_assert_status(int $status, array $provider): void
     if ($status >= 400) {
         $host = parse_url($provider['base_url'], PHP_URL_HOST) ?? 'the provider';
         $name = $provider['name'] ?? $host;
+        if ($status === 429) {
+            $retryAfter = (int)($GLOBALS['__ai_retry_after'] ?? 0);
+            if ($retryAfter <= 0) $retryAfter = 60; // default 60s
+            $resetAt = time() + $retryAfter;
+            throw new RateLimitException(
+                "{$name}: Rate limited. Try again in {$retryAfter}s.",
+                $retryAfter,
+                $resetAt
+            );
+        }
         if ($status === 401 || $status === 403) {
             if (!empty($provider['keyless'])) {
                 throw new RuntimeException(
