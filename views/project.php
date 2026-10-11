@@ -32,7 +32,7 @@
         </span>
       </div>
       <div class="file-tree" id="file-tree">
-        <div class="tree-empty muted tiny">loading&hellip;</div>
+        <div class="tree-skel" aria-label="Loading files"><i></i><i></i><i></i><i></i><i></i></div>
       </div>
     </aside>
 
@@ -81,6 +81,8 @@
         </div>
         <input type="file" id="attach-input" multiple hidden>
       </form>
+
+      <button class="scroll-fab" id="btn-scroll-bottom" type="button" title="Jump to latest" aria-label="Jump to latest message" hidden>&#8595;</button>
 
       <div class="popmenu" id="cmd-menu" hidden></div>
       <div class="popmenu" id="mention-menu" hidden></div>

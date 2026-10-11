@@ -100,7 +100,14 @@
     const out = [];
     let para = [], list = null, quote = [];
 
-    const flushPara = () => { if (para.length) { out.push('<p>' + para.join('<br>') + '</p>'); para = []; } };
+    const flushPara = () => {
+      if (!para.length) return;
+      // a trailing run of 2-3 dashes is a markdown rule, not a hyphenated word
+      const body = para.join('<br>');
+      out.push(/^(-{3,}|\*{3,}|_{3,})$/.test(para[para.length - 1].replace(/<[^>]+>/g, '').trim())
+        ? '<p><hr></p>' : '<p>' + body + '</p>');
+      para = [];
+    };
     const flushList = () => { if (list) { out.push('<' + list.tag + '>' + list.items.join('') + '</' + list.tag + '>'); list = null; } };
     const flushQuote = () => { if (quote.length) { out.push('<blockquote>' + quote.join('<br>') + '</blockquote>'); quote = []; } };
     const flushAll = () => { flushPara(); flushList(); flushQuote(); };
@@ -1060,7 +1067,7 @@
     const title = $('#hist-title');
     if (!dlg || !list) return;
     title.textContent = 'History — ' + path;
-    list.innerHTML = '<div class="muted tiny">loading…</div>';
+    list.innerHTML = '<div class="tree-skel" aria-label="Loading files"><i></i><i></i><i></i><i></i><i></i></div>';
     if (!dlg.open) dlg.showModal();
     try {
       const r = await api('api/projects/' + PID + '/versions?path=' + encodeURIComponent(path));
@@ -1202,10 +1209,40 @@
   /* ================= chat ================= */
   const msgs = $('#messages'), input = $('#chat-input'), sendBtn = $('#send-btn'), stopBtn = $('#stop-btn');
 
+  /* ---- scroll-to-bottom FAB: appears once the user scrolls up to read ---- */
+  const scrollFab = $('#btn-scroll-bottom');
+  let fabLocked = false;
+  function syncScrollFab() {
+    if (!scrollFab) return;
+    const gap = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight;
+    scrollFab.hidden = gap < 220 || fabLocked;
+    scrollFab.classList.toggle('new-msg', gap < 220 && pendingNew);
+  }
+  if (scrollFab) {
+    msgs.addEventListener('scroll', syncScrollFab, { passive: true });
+    scrollFab.onclick = () => { msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }); pendingNew = false; };
+  }
+  let pendingNew = false;
+
+  /* keep the tail pinned unless the reader has scrolled up to look at something */
+  function pinBottom(force) {
+    if (!force && fabLocked) return;
+    msgs.scrollTop = msgs.scrollHeight;
+    pendingNew = false;
+    syncScrollFab();
+  }
+  msgs.addEventListener('scroll', () => {
+    const gap = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight;
+    fabLocked = gap > 120;
+    syncScrollFab();
+  }, { passive: true });
+
   function addMsg(role, html, isHtml, label) {
     const el = document.createElement('div');
     el.className = 'msg ' + role;
-    el.innerHTML = '<div class="msg-role">' + esc(label || (role === 'assistant' ? 'bot' : role)) + '</div><div class="msg-body md"></div>';
+    const stamp = new Date();
+    el.innerHTML = '<div class="msg-role"><span class="mr-name">' + esc(label || (role === 'assistant' ? 'bot' : role)) +
+      '</span><span class="mr-time">' + stamp.toTimeString().slice(0, 5) + '</span></div><div class="msg-body md"></div>';
     const body = $('.msg-body', el);
     if (isHtml) body.innerHTML = html; else body.textContent = html;
     // code block affordances (delegated so re-renders keep working)

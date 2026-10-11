@@ -318,7 +318,9 @@ pre:not(.cblock) code{font-family:var(--mono);font-size:12px;white-space:pre}
 /* ---------------- files ---------------- */
 .side-pane{overflow:hidden}
 .file-tree{overflow:auto;padding:6px;flex:1}
-.tree-empty{padding:14px}
+.tree-empty{padding:20px 14px;text-align:center;line-height:1.6}
+.tree-empty::before{content:"";display:block;width:34px;height:34px;margin:0 auto 10px;border-radius:9px;
+  border:2px dashed var(--border3);opacity:.6}
 .file-item{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:7px;cursor:pointer;color:var(--dim);font-family:var(--mono);font-size:12.2px;user-select:none;transition:all var(--transition);position:relative}
 .file-item:hover{background:var(--panel2);color:var(--text);transform:translateX(2px)}
 .file-item.active{background:#7aa2ff22;color:var(--text-strong);box-shadow:inset 2px 0 0 var(--accent),0 0 12px rgba(122,162,255,.06)}
@@ -639,6 +641,35 @@ dialog::backdrop{background:rgba(3,5,9,.72);backdrop-filter:blur(4px);-webkit-ba
 .rl-text .rl-icon{font-size:14px}
 @keyframes rl-pulse{0%,100%{opacity:1}50%{opacity:.6}}
 
+/* ---------------- scroll-to-bottom FAB ---------------- */
+.scroll-fab{position:absolute;right:18px;bottom:calc(var(--composer-h,0px) + 16px);z-index:20;
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  background:var(--panel3);border:1px solid var(--border2);color:var(--dim);font-size:15px;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);transition:all var(--transition);
+  animation:pop .18s cubic-bezier(.2,.9,.3,1.1)}
+.scroll-fab:hover{color:var(--text);border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.scroll-fab.new-msg{color:var(--accent2);border-color:#4ade8055;box-shadow:0 0 0 4px #4ade8014,0 6px 20px rgba(0,0,0,.35)}
+@media (hover:none),(pointer:coarse){ .scroll-fab{width:46px;height:46px} }
+
+/* file tree loading skeleton — a real placeholder instead of "loading…" text */
+.tree-skel{padding:8px 6px}
+.tree-skel i{display:block;height:11px;border-radius:6px;margin-bottom:9px;
+  background:linear-gradient(90deg,var(--panel2) 25%,var(--panel3) 37%,var(--panel2) 63%);
+  background-size:400% 100%;animation:skel 1.3s ease infinite}
+.tree-skel i:nth-child(1){width:72%}
+.tree-skel i:nth-child(2){width:56%;animation-delay:.12s}
+.tree-skel i:nth-child(3){width:80%;animation-delay:.24s}
+.tree-skel i:nth-child(4){width:44%;animation-delay:.36s}
+.tree-skel i:nth-child(5){width:66%;animation-delay:.48s}
+@keyframes skel{0%{background-position:100% 50%}100%{background-position:0 50%}}
+
+/* message header: name + timestamp */
+.msg-role .mr-name{letter-spacing:1.8px}
+.msg-role .mr-time{font-size:9.5px;color:var(--muted);opacity:.65;letter-spacing:.4px;margin-left:auto;padding-left:8px}
+
+/* light theme */
+[data-theme=light] .scroll-fab{box-shadow:0 4px 14px rgba(24,34,60,.14)}
+[data-theme=light] .scroll-fab:hover{box-shadow:0 6px 18px rgba(24,34,60,.2)}
 /* ================= light theme ================= */
 [data-theme=light]{
   --bg:#f3f5fa; --bg2:#ffffff; --panel:#ffffff; --panel2:#f1f4f9; --panel3:#e7ecf4;
